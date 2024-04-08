@@ -46,7 +46,7 @@ wiringpi.softPwmCreate(24,0,8)
 def button_callback(channel):
     global BUTTON_PRESS_TIME
     global PLAYBACK_STATE
-    if (time.time() - BUTTON_PRESS_TIME) > 1:
+    if (time.time() - BUTTON_PRESS_TIME) > 1: # Debounce logic to prevent multiple callbacks being triggered
         if PLAYBACK_STATE == 0:
             print("Pausing playback...")
             sp.pause_playback(device_id=DEVICE_ID)

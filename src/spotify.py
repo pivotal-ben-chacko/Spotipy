@@ -68,7 +68,7 @@ def play_music(id, resume):
     try :
         # Transfer playback to the Raspberry Pi if music is playing on a different device
         sp.transfer_playback(device_id=DEVICE_ID, force_play=resume)
-        # Play the spotify track at URI with ID 45vW6Apg3QwawKzBi03rgD (you can swap this for a diff song ID below)
+        # Play the spotify track at URI with album ID
         sp.start_playback(device_id=DEVICE_ID, context_uri=uri)
         sp.volume(100, device_id=DEVICE_ID)
         ALBUM_ID=id
@@ -77,7 +77,7 @@ def play_music(id, resume):
         PLAYBACK_STATE = 1
 
 while True:
-    if rc.read(rc.block_num):  # read the content written to the card in the previous step
+    if rc.read(rc.block_num):  # read the content from MiFare RFID card
         wiringpi.digitalWrite(29,0)  # turn on red led
         wiringpi.softPwmWrite(24, 5)
         time.sleep(0.2)

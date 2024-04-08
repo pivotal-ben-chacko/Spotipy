@@ -1,3 +1,19 @@
+# Spotify RFID Jukebox
+#
+# Author: Ben Chacko, 2024
+# Description: This project uses the RC522 RFID HAT to read tags and stream the
+#              associated album using the Spotify API. You must sign up for a
+#              developer account with premium streaming services in order to utilize
+#              the Spotify API.
+#
+# Additional: For simplicity, API calls are made using the Spotipy python module.
+#               - https://spotipy.readthedocs.io/en/2.22.1/
+#
+# Hardware: RC522 RFID HAT
+#             - https://seengreat.com/wiki/90/rc522-rfid-hat
+#           Raspberry Pi 3 Model B+
+#             - https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/
+
 import module
 import string
 import wiringpi
@@ -9,12 +25,11 @@ from time import sleep
 
 import RPi.GPIO as GPIO
 
-DEVICE_ID="<DEVICE-ID"
-CLIENT_ID="CLIENT-ID"
-CLIENT_SECRET="CLIENT-SECRET"
+DEVICE_ID="<DEVICE-ID>"
+CLIENT_ID="<CLIENT-ID>"
+CLIENT_SECRET="<CLIENT-SECRET>"
 
 ALBUM_ID=0
-
 BUTTON_PRESS_TIME=0
 PLAYBACK_STATE=0
 
@@ -48,20 +63,21 @@ GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input 
 GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback) # Setup event on pin 10 rising edge
 
 def play_music(id, resume):
+    global ALBUM_ID
     uri = "spotify:album:" + str(id)
     try :
         # Transfer playback to the Raspberry Pi if music is playing on a different device
         sp.transfer_playback(device_id=DEVICE_ID, force_play=resume)
-        # Play the spotify track at URI with album ID
+        # Play the spotify track at URI with ID 45vW6Apg3QwawKzBi03rgD (you can swap this for a diff song ID below)
         sp.start_playback(device_id=DEVICE_ID, context_uri=uri)
         sp.volume(100, device_id=DEVICE_ID)
+        ALBUM_ID=id
     except:
-        # If exception, reset playback state and resume loop
         print("An exception occurred")
         PLAYBACK_STATE = 1
 
 while True:
-    if rc.read(rc.block_num):  # read RFID card data
+    if rc.read(rc.block_num):  # read the content written to the card in the previous step
         wiringpi.digitalWrite(29,0)  # turn on red led
         wiringpi.softPwmWrite(24, 5)
         time.sleep(0.2)
@@ -74,12 +90,10 @@ while True:
             s += str(integer)
         print("read card:", s)
         if s == "0000000000000000":
-            ALBUM_ID="0fWLW9j35eQTrOb8mHcnyX"
             print("Playing Megadeth on Spotify")
-            play_music(ALBUM_ID, False)
+            play_music("0fWLW9j35eQTrOb8mHcnyX", False)
         elif s == "1111111111111111":
-            ALBUM_ID="38W7WU8kz5SHqcNdx9ZtmC"
             print("Playing Mitski on Spotify")
-            play_music(ALBUM_ID, False)
+            play_music("38W7WU8kz5SHqcNdx9ZtmC", False)
         else:
-            print("Error: uknown id...")
+            print("Uknown id")

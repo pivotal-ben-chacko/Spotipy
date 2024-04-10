@@ -29,6 +29,9 @@ DEVICE_ID="<DEVICE-ID>"
 CLIENT_ID="<CLIENT-ID>"
 CLIENT_SECRET="<CLIENT-SECRET>"
 
+albums = { 0: {"id": "0fWLW9j35eQTrOb8mHcnyX", "rfid": "0000000000000000", "artist": 'Megadeth', "title": "Symphony of Destruction"},
+           1: {"id": "38W7WU8kz5SHqcNdx9ZtmC", "rfid": "1111111111111111", "artist": 'Mitski', "title": ""}}
+
 # Singleton Class
 class PlayerStateMachine:
   _instance = None
@@ -110,11 +113,11 @@ while True:
         for integer in rc.RFID:
             s += str(integer)
         print("read card:", s)
-        if s == "0000000000000000":
+        if s == albums[0]["rfid"]:
             print("Playing Megadeth on Spotify")
-            player.play_music("0fWLW9j35eQTrOb8mHcnyX", False)
-        elif s == "1111111111111111":
+            player.play_music(albums[0]["id"], False)
+        elif s == albums[0]["rfid"]:
             print("Playing Mitski on Spotify")
-            player.play_music("38W7WU8kz5SHqcNdx9ZtmC", False)
+            player.play_music(albums["1"]["id"], False)
         else:
             print("Uknown id")

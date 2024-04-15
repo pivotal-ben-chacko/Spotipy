@@ -25,12 +25,20 @@ from time import sleep
 
 import RPi.GPIO as GPIO
 
-DEVICE_ID="<DEVICE-ID>"
-CLIENT_ID="<CLIENT-ID>"
-CLIENT_SECRET="<CLIENT-SECRET>"
+DEVICE_ID="5f41844bd4dc5aa86b93fef18214e128771444cb"
+CLIENT_ID="6b34ca233bc04890a97c890f7ea02200"
+CLIENT_SECRET="7faef20a1ee24d81b03ba9cad5cd52f9"
 
 albums = { 0: {"id": "0fWLW9j35eQTrOb8mHcnyX", "rfid": "0000000000000000", "artist": 'Megadeth', "title": "Symphony of Destruction"},
-           1: {"id": "38W7WU8kz5SHqcNdx9ZtmC", "rfid": "1111111111111111", "artist": 'Mitski', "title": ""}}
+           1: {"id": "2Kh43m04B1UkVcpcRa1Zug", "rfid": "1111111111111111", "artist": 'Metallica', "title": "Black Album"},
+           2: {"id": "4Gfnly5CzMJQqkUFfoHaP3", "rfid": "2222222222222222", "artist": 'Likin Park', "title": "Meteora"},
+           3: {"id": "3AUIurHdBrfvqSs7EEr3AA", "rfid": "3333333333333333", "artist": 'Skillet', "title": "Rise"},
+           4: {"id": "65GdWk0paVbY04benEKKIU", "rfid": "4444444444444444", "artist": "Fear Factory", "title": "Demanufacture"},
+           5: {"id": "4Cn4T0onWhfJZwWVzU5a2t", "rfid": "5555555555555555", "artist": "Metallica", "title": "And Justice For All"},
+           6: {"id": "5r4qa5AIQUVypFRXQzjaiu", "rfid": "6666666666666666", "artist": "Sepultura", "title": "Chaos A.D."},
+           7: {"id": "2WRLwr5MIIXr9gAWOOQ6J5", "rfid": "7777777777777777", "artist": "Static X", "title": "Wisconsin Death Trip"},
+           8: {"id": "5iBvQWRRazoyt7CrEPFBsW", "rfid": "8888888888888888", "artist": "Megadeth", "title": "Youthanasia"},
+           9: {"id": "3HugnfabsMODIbxzwxS5xC", "rfid": "9999999999999999", "artist": "White Zombie", "title": "Astro-Creep:2000"}}
 
 # Singleton Class
 class PlayerStateMachine:
@@ -95,10 +103,18 @@ wiringpi.softPwmCreate(24,0,8)
 def button_callback(channel):
     player.pause_music()
 
+def play_album(index):
+    print("Playing " + albums[index]["artist"] + " on Spotify")
+    player.play_music(albums[index]["id"], False)
+
+def get_rfid(index):
+    return albums[index]["rfid"]
+
 GPIO.setwarnings(False) # Ignore warning for now
 GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
 GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input pin and set initial value to be pulled low (off)
 GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback) # Setup callback event on pin 10 rising edge
+
 
 while True:
     if rc.read(rc.block_num):  # read the content from MiFare RFID card
@@ -113,11 +129,25 @@ while True:
         for integer in rc.RFID:
             s += str(integer)
         print("read card:", s)
-        if s == albums[0]["rfid"]:
-            print("Playing Megadeth on Spotify")
-            player.play_music(albums[0]["id"], False)
-        elif s == albums[0]["rfid"]:
-            print("Playing Mitski on Spotify")
-            player.play_music(albums["1"]["id"], False)
+        if s == get_rfid(0):    # Megadeth: Symphony of Destruction
+            play_album(0)
+        elif s == get_rfid(1):  # Metallica: Black Album
+            play_album(1)
+        elif s == get_rfid(2):  # Linkin Park: Meteora
+            play_album(2)
+        elif s == get_rfid(3):  # Skillet: Rise
+            play_album(3)
+        elif s == get_rfid(4):  # Fear Factory: Demanufacture
+            play_album(4)
+        elif s == get_rfid(5):  # Metallica: And Justice For All
+            play_album(5)
+        elif s == get_rfid(6):  # Sepultura: Chaos A.D.
+            play_album(6)
+        elif s == get_rfid(7):  # Static X: Wisconsin Death Trip
+            play_album(7)
+        elif s == get_rfid(8):  # Megadeth: Youthanasia
+            play_album(8)
+        elif s == get_rfid(9):  # White Zombie: Astro-Creep:2000
+            play_album(9)
         else:
             print("Uknown id")

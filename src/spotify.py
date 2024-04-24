@@ -29,6 +29,10 @@ DEVICE_ID="5f41844bd4dc5aa86b93fef18214e128771444cb"
 CLIENT_ID="6b34ca233bc04890a97c890f7ea02200"
 CLIENT_SECRET="7faef20a1ee24d81b03ba9cad5cd52f9"
 
+# Specify path to cache file so that Spotify API knows where to look regardles of what directory you are in
+# See: https://github.com/spotipy-dev/spotipy/issues/712
+CACHE_DIR="/home/pi/Spotipy/src/.cache"
+
 albums = { 0: {"id": "0fWLW9j35eQTrOb8mHcnyX", "rfid": "0000000000000000", "artist": 'Megadeth', "title": "Symphony of Destruction"},
            1: {"id": "2Kh43m04B1UkVcpcRa1Zug", "rfid": "1111111111111111", "artist": 'Metallica', "title": "Black Album"},
            2: {"id": "4Gfnly5CzMJQqkUFfoHaP3", "rfid": "2222222222222222", "artist": 'Likin Park', "title": "Meteora"},
@@ -59,8 +63,10 @@ class PlayerStateMachine:
       self.lastButtonPress = 0
 
       # Spotify Authentication
-      self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
+      self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+                                            client_id=CLIENT_ID,
                                             client_secret=CLIENT_SECRET,
+                                            cache_path=CACHE_DIR,
                                             redirect_uri="http://localhost:8080",
                                             scope="user-read-playback-state,user-modify-playback-state"))
 

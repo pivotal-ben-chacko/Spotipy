@@ -25,9 +25,9 @@ from time import sleep
 
 import RPi.GPIO as GPIO
 
-DEVICE_ID="5f41844bd4dc5aa86b93fef18214e128771444cb"
-CLIENT_ID="6b34ca233bc04890a97c890f7ea02200"
-CLIENT_SECRET="7faef20a1ee24d81b03ba9cad5cd52f9"
+DEVICE_ID=<DEVICE-ID>
+CLIENT_ID=<CLIENT-ID>
+CLIENT_SECRET=<CLIENT-SECRET>
 
 # Specify path to cache file so that Spotify API knows where to look regardles of what directory you are in
 # See: https://github.com/spotipy-dev/spotipy/issues/712

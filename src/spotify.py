@@ -29,6 +29,11 @@ DEVICE_ID=<DEVICE-ID>
 CLIENT_ID=<CLIENT-ID>
 CLIENT_SECRET=<CLIENT-SECRET>
 
+BUTTON_PAUSE_MUSIC = 10
+BUTTON_VOL_UP      = 16
+BUTTON_VOL_DOWN    = 18
+
+
 # Specify path to cache file so that Spotify API knows where to look regardles of what directory you are in
 # See: https://github.com/spotipy-dev/spotipy/issues/712
 CACHE_DIR="/home/pi/Spotipy/src/.cache"
@@ -50,6 +55,7 @@ class PlayerStateMachine:
 
   STATE_PLAYING = 0
   STATE_PAUSED = 1
+  STATE_VOLUME = -1
 
   def __new__(cls):
     if cls._instance is None:
@@ -77,12 +83,21 @@ class PlayerStateMachine:
           self.sp.transfer_playback(device_id=DEVICE_ID, force_play=resume)
           # Play the spotify track at URI with album ID
           self.sp.start_playback(device_id=DEVICE_ID, context_uri=uri)
-          self.sp.volume(100, device_id=DEVICE_ID)
           self.albumId = id
           self.state = self.STATE_PLAYING
+          # Get current volume level
+          self.set_volume()
       except Exception as e:
           print("Error: " + str(e))
           self.state = self.STATE_PAUSED
+
+  def set_volume(self):
+      if self.STATE_VOLUME == -1:
+          data = self.sp.current_playback(market=None, additional_types=None)
+          formated_data = json.dumps(data, indent=2)
+          value = json.loads(formated_data)["device"]["volume_percent"]
+          self.STATE_VOLUME = int(value / 10) * 10
+          print("Current volume: " + str(self.STATE_VOLUME))
 
   def pause_music(self):
       if (time.time() - self.lastButtonPress) > 1: # Debounce logic to prevent multiple button presses being triggered
@@ -99,6 +114,27 @@ class PlayerStateMachine:
           except Exception as e:
               print("Error: " + str(e))
 
+  def volume_up(self):
+      if (time.time() - self.lastButtonPress) > 1: # Debounce logic to prevent multiple button presses being triggered
+          try :
+             if (self.STATE_VOLUME + 10) <= 100:
+                 self.STATE_VOLUME += 10
+                 self.sp.volume(self.STATE_VOLUME, device_id=DEVICE_ID)
+                 print("Volume set to " + str(self.STATE_VOLUME))
+             self.lastButtonPress = time.time()
+          except Exception as e:
+              print("Error: " + str(e))
+
+  def volume_down(self):
+      if (time.time() - self.lastButtonPress) > 1: # Debounce logic to prevent multiple button presses being triggered
+          try :
+             if (self.STATE_VOLUME - 10) >= 0:
+                 self.STATE_VOLUME -= 10
+                 self.sp.volume(self.STATE_VOLUME, device_id=DEVICE_ID)
+                 print("Volume set to " + str(self.STATE_VOLUME))
+             self.lastButtonPress = time.time()
+          except Exception as e:
+              print("Error: " + str(e))
 
 player = PlayerStateMachine()
 
@@ -109,6 +145,12 @@ wiringpi.softPwmCreate(24,0,8)
 def button_callback(channel):
     player.pause_music()
 
+def volume_up_callback(channel):
+    player.volume_up()
+
+def volume_down_callback(channel):
+    player.volume_down()
+
 def play_album(index):
     print("Playing " + albums[index]["artist"] + " on Spotify")
     player.play_music(albums[index]["id"], False)
@@ -116,10 +158,23 @@ def play_album(index):
 def get_rfid(index):
     return albums[index]["rfid"]
 
+# Puase music hardware setup
 GPIO.setwarnings(False) # Ignore warning for now
 GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
-GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input pin and set initial value to be pulled low (off)
-GPIO.add_event_detect(10,GPIO.RISING,callback=button_callback) # Setup callback event on pin 10 rising edge
+GPIO.setup(BUTTON_PAUSE_MUSIC, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input pin and set initial value to be pulled low (off)
+GPIO.add_event_detect(BUTTON_PAUSE_MUSIC, GPIO.RISING,callback=button_callback) # Setup callback event on pin 10 rising edge
+
+# Volume up hardware setup
+GPIO.setwarnings(False) # Ignore warning for now
+GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
+GPIO.setup(BUTTON_VOL_UP, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 16 to be an input pin and set initial value to be pulled low (off)
+GPIO.add_event_detect(BUTTON_VOL_UP, GPIO.RISING,callback=volume_up_callback) # Setup callback event on pin 16 rising edge
+
+# Volume down hardware setup
+GPIO.setwarnings(False) # Ignore warning for now
+GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
+GPIO.setup(BUTTON_VOL_DOWN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 18 to be an input pin and set initial value to be pulled low (off)
+GPIO.add_event_detect(BUTTON_VOL_DOWN, GPIO.RISING,callback=volume_down_callback) # Setup callback event on pin 18 rising edge
 
 
 while True:

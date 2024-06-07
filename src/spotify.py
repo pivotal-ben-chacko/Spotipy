@@ -18,6 +18,7 @@ import module
 import string
 import wiringpi
 import time
+import json
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -47,7 +48,19 @@ albums = { 0: {"id": "0fWLW9j35eQTrOb8mHcnyX", "rfid": "0000000000000000", "arti
            6: {"id": "5r4qa5AIQUVypFRXQzjaiu", "rfid": "6666666666666666", "artist": "Sepultura", "title": "Chaos A.D."},
            7: {"id": "2WRLwr5MIIXr9gAWOOQ6J5", "rfid": "7777777777777777", "artist": "Static X", "title": "Wisconsin Death Trip"},
            8: {"id": "5iBvQWRRazoyt7CrEPFBsW", "rfid": "8888888888888888", "artist": "Megadeth", "title": "Youthanasia"},
-           9: {"id": "3HugnfabsMODIbxzwxS5xC", "rfid": "9999999999999999", "artist": "White Zombie", "title": "Astro-Creep:2000"}}
+           9: {"id": "3HugnfabsMODIbxzwxS5xC", "rfid": "9999999999999999", "artist": "White Zombie", "title": "Astro-Creep:2000"},
+          10: {"id": "09AwlP99cHfKVNKv4FC8VW", "rfid": "1000000000000001", "artist": "Alanis Morissette", "title": "Jagged Little Pill"},
+          11: {"id": "1Vze7jtjAVQOdIIQ8oO2X7", "rfid": "2000000000000002", "artist": "Garbage", "title": "20th Anniversary"},
+          12: {"id": "5B4PYA7wNN4WdEXdIJu58a", "rfid": "3000000000000003", "artist": "Pearl Jam", "title": "Ten"},
+          13: {"id": "1iNAtkD0iP1wEE8ItzfjZk", "rfid": "4000000000000004", "artist": "Godsmack", "title": "Faceless"},
+          14: {"id": "4K8bxkPDa5HENw0TK7WxJh", "rfid": "5000000000000005", "artist": "Soundgarden", "title": "Superunknown"},
+          15: {"id": "4bPT6Q8ppaSNppk1kbEbLl", "rfid": "6000000000000006", "artist": "Smashing Pumpkins", "title": "Mellon Collie And The Infinite Sadness"},
+          16: {"id": "47Z7zIEHWy2ZQQzmg6B1w5", "rfid": "7000000000000007", "artist": "KMFDM", "title": "NIHIL"},
+          17: {"id": "2guirTSEqLizK7j9i1MTTZ", "rfid": "8000000000000008", "artist": "Nirvana", "title": "Nevermind"},
+          18: {"id": "5QcdaEgknPDT2CwsQ3fKMn", "rfid": "9000000000000009", "artist": "Moist", "title": "Silver"},
+          19: {"id": "4mWNf9f6fkznoMKchh2u1M", "rfid": "1100000000000011", "artist": "Our Lady Peace", "title": "Clumsy"},
+          19: {"id": "4Io5vWtmV1rFj4yirKb4y4", "rfid": "1200000000000021", "artist": "Rage Against the Machine", "title": "Rage Against the Machine"},
+          19: {"id": "0KAj2FT0oe4PgCHdVHjojX", "rfid": "1300000000000031", "artist": "Stabbing Westward", "title": "Wither Blister Burn + Peel"}}
 
 # Singleton Class
 class PlayerStateMachine:
@@ -155,8 +168,18 @@ def play_album(index):
     print("Playing " + albums[index]["artist"] + " on Spotify")
     player.play_music(albums[index]["id"], False)
 
+def get_album_size():
+    return len(albums)
+
 def get_rfid(index):
     return albums[index]["rfid"]
+
+def play_if_album_exists(rfid):
+    for index in albums:
+        if get_rfid(index) == rfid:
+            play_album(index)
+            return True
+    return False
 
 # Puase music hardware setup
 GPIO.setwarnings(False) # Ignore warning for now
@@ -185,30 +208,9 @@ while True:
         wiringpi.digitalWrite(29,1)  # turn off red led
         wiringpi.softPwmWrite(24,0)  # turn off buzzer
         time.sleep(0.3)
-
         s = ""
         for integer in rc.RFID:
             s += str(integer)
         print("read card:", s)
-        if s == get_rfid(0):    # Megadeth: Symphony of Destruction
-            play_album(0)
-        elif s == get_rfid(1):  # Metallica: Black Album
-            play_album(1)
-        elif s == get_rfid(2):  # Linkin Park: Meteora
-            play_album(2)
-        elif s == get_rfid(3):  # Skillet: Rise
-            play_album(3)
-        elif s == get_rfid(4):  # Fear Factory: Demanufacture
-            play_album(4)
-        elif s == get_rfid(5):  # Metallica: And Justice For All
-            play_album(5)
-        elif s == get_rfid(6):  # Sepultura: Chaos A.D.
-            play_album(6)
-        elif s == get_rfid(7):  # Static X: Wisconsin Death Trip
-            play_album(7)
-        elif s == get_rfid(8):  # Megadeth: Youthanasia
-            play_album(8)
-        elif s == get_rfid(9):  # White Zombie: Astro-Creep:2000
-            play_album(9)
-        else:
-            print("Uknown id")
+        play_if_album_exists(s) if True else print("Uknown id")
+

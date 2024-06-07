@@ -24,11 +24,12 @@ Register device with Spotify by playing to device on the Spotify App and record 
 
 Update Device ID in src/spotify.py
 
-
+albums-rfid.jpg
+![albums](albums-rfid.jpg)
 
 # RC522 RFID HAT
 
-![RC522 RFID HAT](https://seengreat.com/upload/wiki/202312/07/17019373674916129220.jpg)
+![rfid-hat](https://seengreat.com/upload/wiki/202312/07/17019373674916129220.jpg)
 
 ## Overview
 
